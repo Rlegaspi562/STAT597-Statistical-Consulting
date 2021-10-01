@@ -1,0 +1,90 @@
+---
+title: "STAT 597 - COVID DATA: Preliminary Exploratory Analysis"
+author: "Rumil"
+date: "9/29/2021"
+output: pdf_document
+---
+
+
+```{r}
+library(tidyverse)
+
+covid <- read_csv("C:/Users/RUMIL/Desktop/APU/STAT 597 - Soeun Kim (Statistical Consulting)/COVID19 597.csv", locale = locale(encoding = "Latin1"))
+
+glimpse(covid)
+
+```
+
+```{r}
+covid %>% select(
+  current_status,
+  sex,
+  age_group,
+  `Race and ethnicity (combined)`,
+  hosp_yn,
+  icu_yn,
+  death_yn,
+  medcond_yn
+) %>% as_factor()
+```
+
+
+
+Histograms
+
+```{r}
+#Deaths by Age group
+covid %>%  filter(age_group != "Unknown") %>%
+ggplot() +
+  aes(x = age_group, fill = death_yn) +
+  geom_bar(position = "dodge")+
+  scale_fill_hue(direction = 1) +
+  theme_minimal() +
+  theme(legend.position = "top") + coord_flip()
+
+
+```
+Notice the amount of "Missing" there are when filling out these forms. I'd be curious where most of these "Missing" observations are coming from
+
+```{r}
+#Deaths by Age group
+ covid  %>% filter(sex != "Unknown", sex != "Missing") %>%
+ggplot() +
+  aes(x = sex, fill = death_yn) +
+  geom_bar(position = "dodge")+
+  scale_fill_hue(direction = 1) +
+  theme_minimal() +
+  theme(legend.position = "top") + coord_flip()
+
+
+```
+The amount of missing cases is curious.
+
+```{r}
+
+#current status by race/ethnicity
+covid  %>%
+ggplot() +
+  aes(x = `Race and ethnicity (combined)`, fill = current_status) +
+  geom_bar(position = "dodge")+
+  scale_fill_hue(direction = 1) +
+  theme_minimal() +
+  theme(legend.position = "top") + coord_flip()
+
+
+#death status by race/ethnicity
+covid  %>%
+ggplot() +
+  aes(x = `Race and ethnicity (combined)`, fill = death_yn) +
+  geom_bar(position = "dodge")+
+  scale_fill_hue(direction = 1) +
+  theme_minimal() +
+  theme(legend.position = "top") + coord_flip()
+
+
+
+```
+
+
+
+

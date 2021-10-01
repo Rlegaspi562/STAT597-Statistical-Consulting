@@ -1,0 +1,67 @@
+---
+title: "Class 5 Logistic regression"
+author: "Rumil"
+date: "9/29/2021"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(tidyverse)
+```
+
+
+
+```{r}
+
+fund <- read_csv("C:/Users/RUMIL/Desktop/APU/STAT 597 - Soeun Kim (Statistical Consulting)/COVID19 597.csv", locale = locale(encoding = "Latin1"))
+
+fund
+
+```
+
+```{r}
+fund_boxplot <- fund %>% select(
+  Metals, Income)  %>%
+
+  ggplot(aes(x = fund, y = Income)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.20, h = 0.5, alpha = 0.5) +
+  labs(x = "Indexes", y = "% return") +
+  theme(legend.position = "top") +
+  coord_flip()  +
+    labs(title="Boxplot of ",
+         caption="caption",
+         x="Indexes",
+         y=" % Return")
+
+fund_boxplot
+
+
+s_20 <- ggplot(data = fund, aes((Metals, Income, na.rm = TRUE), values))
+s_20 + geom_boxplot(varwidth=T, fill="plum")
+
+
+fund_boxplot2 <- ggplot(data = fund, aes()))
+s_20 + geom_boxplot(varwidth=T, fill="plum") +
+    labs(title="Box plot",
+         subtitle="Change in Pain During Saline Injection Grouped by Site 2020 \nAscending in order of median",
+         caption="Source: Initial Pain - 20 min Saline Pain",
+         x="Site",
+         y="Saline Change In Pain")
+
+```
+
+
+boxplot(fund$Metals,fund$Income,names=c("Metals","Income"))
+
+
+
+
+
+
