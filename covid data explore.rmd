@@ -1,0 +1,346 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Loading Libraries
+
+```{r}
+library(tidyverse)
+library(skimr)
+
+```
+
+
+Loading Data
+
+```{r}
+covid <- read_csv("C:/Users/RUMIL/Desktop/APU/STAT 597 - Soeun Kim (Statistical Consulting)/COVID19 597.csv", locale = locale(encoding = "Latin1"))
+
+covid <- read_csv("C:/Users/RumilLegaspi/Desktop/COVID19 597.csv ")
+```
+
+
+
+Taking a glimpse of the data
+```{r}
+glimpse(covid)
+```
+
+
+```{r}
+covid %>% select(
+current_status,
+sex,
+age_group,
+`Race and ethnicity (combined)`,
+hosp_yn,
+icu_yn,
+death_yn,
+medcond_yn
+) %>% as_factor()
+
+```
+
+Histograms to explore
+
+```{r}
+#Deaths by Age group
+covid %>% filter(age_group != "Unknown") %>%
+ggplot() +
+aes(x = age_group, fill = death_yn) +
+geom_bar(position = "dodge")+
+scale_fill_hue(direction = 1) +
+theme_minimal() +
+theme(legend.position = "top") + coord_flip()
+
+
+```
+Notice the amount of “Missing” there are when filling out these forms. I’d be curious where most of these
+“Missing” observations are coming from
+
+
+
+```{r}
+#Deaths by Age group
+covid %>% filter(sex != "Unknown", sex != "Missing", current_status == "Laboratory-confirmed case") %>%
+ggplot() +
+aes(x = sex, fill = current_status) +
+geom_bar(position = "dodge")+
+scale_fill_hue(direction = 1) +
+theme_minimal() +
+theme(legend.position = "top") + coord_flip()
+
+```
+The amount of missing cases is curious.
+
+
+
+
+
+Current status by race/ethnicity
+
+```{r}
+
+d <- covid %>%
+ggplot() +
+aes(x = `Race and ethnicity (combined)`, fill = current_status) +
+geom_bar(position = "dodge", stat = "identity")+
+
+  scale_fill_hue(direction = 1) +
+theme_minimal() +
+geom_text(aes(label=Number, position=position_dodge(width=0.9), vjust=-0.25) +
+theme(legend.position = "top") + coord_flip()
+
+d
+
+
+# in the most simplest form
+ggplot(data=dat, aes(x=Types, y=Number, fill=sample)) +
+geom_bar(position = 'dodge', stat='identity') +
+geom_text(aes(label=Number), position=position_dodge(width=0.9), vjust=-0.25)
+
+
+covid %>%
+  ggplot( aes(x = factor(site),
+                          y = prop.table(stat(count)),
+                          fill = factor(inj_location),
+                          label = scales::percent(prop.table(stat(count))))) +
+    geom_bar(position = "dodge") +
+    geom_text(stat = 'count',
+              position = position_dodge2(.05),
+              vjust = -0.9,
+              size = 3)
+```
+
+
+
+
+Death status by race/ethnicity
+```{r}
+covid %>%
+ggplot() +
+aes(x = `Race and ethnicity (combined)`, fill = death_yn) +
+geom_bar(position = "dodge")+
+scale_fill_hue(direction = 1) +
+theme_minimal() +
+theme(legend.position = "top") + coord_flip()
+```
+
+
+
+
+
+
+
+# Research question: Which demographic has been most affected by Covid?
+
+Based on our previous plots of confirmed cases (for race.ethnicity) we know the top 3 are, White, Non-Hispanic, Hispanic/Latino, and Black, Non-Hispanic.
+```{r}
+#Creating dataset for covid positive only patients
+race.ethn_pos_data <- covid %>% select(
+  `Race and ethnicity (combined)`, current_status)  %>%
+    filter(current_status == "Laboratory-confirmed case")
+
+skim(race.ethn_pos_data)
+glimpse(race.ethn_pos_data)
+str(race.ethn_pos_data)
+```
+
+So if two categorical variables are associated we can consturct
+Lets create a contingency table for our data containing only confirmed cases of COVID
+```{r}
+
+
+
+race.ethn_pos_boxplot <- covid %>% select(
+  `Race and ethnicity (combined)`, current_status)  %>%
+    filter(current_status == "Laboratory-confirmed case") %>%
+  ggplot(aes(x = current_status, y = `Race and ethnicity (combined)`, fill = current_status)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.10, h = 0.5, alpha = 0.5) +
+  labs(x = "Failed [0] : Passed [1]", y = "Change In Overall Pain Level") +
+  theme(legend.position = "top") +
+  coord_flip()  +
+    labs(title="Boxplot of Total Percent Change in Pain Post Saline",     subtitle="",
+         caption="Pain levels relative to saline at needle insertion",
+         x="Failed [0] : Passed [1]",
+         y=" % Change in Pain")
+
+---
+title: "Case Study 2"
+author: "chris"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      comment = "")
+library(tidyverse)
+```
+
+
+```{r}
+# load raw data
+covid_raw = read_csv("COVID19 597.csv")
+```
+
+```{r, include= FALSE}
+# take quick look into raw data
+head(covid_raw, 10)
+```
+
+```{r}
+# create new dataset
+covid <-  covid_raw %>% mutate(cdc_report_dt = as.Date(cdc_report_dt, "%m/%d/%y"),
+                   pos_spec_dt = as.Date(pos_spec_dt, "%m/%d/%y"),
+                   current_status = factor(current_status),
+                   sex = factor(sex),
+                   age_group = factor(age_group),
+                   `Race and ethnicity (combined)` = factor(`Race and ethnicity (combined)`),
+                   hosp_yn = factor(hosp_yn),
+                   icu_yn = factor(icu_yn),
+                   death_yn = factor(death_yn),
+                   medcond_yn = factor(medcond_yn))
+```
+
+
+```{r}
+# view summary of each variable
+covid %>%
+  select(current_status,
+                 sex,
+                 age_group,
+                 `Race and ethnicity (combined)`,
+                 hosp_yn,
+                 icu_yn,
+                 death_yn,
+                 medcond_yn) %>%
+  summary(maxsum=10)
+```
+
+```{r, include = FALSE}
+# another function for quick view
+glimpse
+```
+
+```{r}
+# create dataset with only entries with confirmed cases
+covid_confirmed <-  covid %>%
+                        filter(current_status == "Laboratory-confirmed case") %>%
+                        select(sex,
+                               age_group,
+                               `Race and ethnicity (combined)`,
+                               hosp_yn,
+                               icu_yn,
+                               death_yn,
+                               medcond_yn)
+
+
+```
+
+
+
+```{r}
+# bar graph of confirmed cases by gender
+covid_confirmed %>%
+  select(sex) %>%
+  ggplot(aes(sex)) +
+  geom_bar() +
+  theme(axis.title=element_blank()) +
+  labs(title = "Cases by Gender")
+```
+
+```{r}
+# bar graph of confirmed cases by age group
+covid_confirmed %>%
+  select(age_group) %>%
+  ggplot(aes(y=age_group)) +
+  geom_bar() +
+  theme(axis.title=element_blank()) +
+  labs(title = "Cases by Age Groups")
+```
+
+```{r}
+# bar graph of confirmed cases by race and ethnicity
+covid_confirmed %>%
+  select(`Race and ethnicity (combined)`) %>%
+  ggplot(aes(y=`Race and ethnicity (combined)`)) +
+  geom_bar() +
+  theme(axis.title=element_blank()) +
+  labs(title = "Cases by Race and Ethnicity")
+```
+
+```{r}
+covid_confirmed %>%
+  filter(sex == "Female" | sex == "Male",
+         death_yn == "Yes" | death_yn == "No") %>%
+  ggplot(aes(death_yn)) +
+  geom_bar() +
+  theme(axis.title=element_blank()) +
+  labs(title = "Fatal cases")
+```
+
+
+
+
+
+
+```{r}
+covid_confirmed %>%
+  filter(medcond_yn == "Yes" | medcond_yn == "No",
+         sex == "Female" | sex == "Male",
+         death_yn == "Yes" | death_yn == "No") %>%
+  ggplot(aes(y=medcond_yn, fill = death_yn)) +
+  geom_bar() +
+  theme(axis.title=element_blank()) +
+  labs(title = "Fatal cases with a medical condition and without medical condition")
+
+  #summary(maxsum = 10)
+ 
+```
+
+
+
+
+---------------------------------------------------------
+
+
+race.ethn_pos_boxplot
+
+
+
+
+race.ethn_pos_boxplot <- ggplot(data = covid, aes(reorder(site, sal_change_in_pain, na.rm = TRUE), sal_change_in_pain))
+s_19 + geom_boxplot(varwidth=T, fill="plum") +
+    labs(title="Box plot",
+         subtitle="Change in Pain During Saline Injection Grouped by Site 2019 \nAscending in order of median",
+         caption="Source: Initial Pain - 20 min Saline Pain",
+         x="Site",
+         y="Saline Change In Pain")
+
+```
+
+```{r}
+
+````
+
+
+
+
+```
+Know where 
+
+
+
+
+
+
+
+
+
+
+

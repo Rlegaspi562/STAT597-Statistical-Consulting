@@ -1,0 +1,149 @@
+---
+title: "Case Study 2"
+author: "chris"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      comment = "")
+library(tidyverse)
+```
+
+
+```{r}
+# load raw data
+covid_raw = read_csv("C:/Users/RUMIL/Desktop/APU/STAT 597 - Soeun Kim (Statistical Consulting)/COVID19 597.csv", locale = locale(encoding = "Latin1"))
+```
+
+```{r, include= FALSE}
+# take quick look into raw data
+head(covid_raw, 10)
+```
+
+```{r}
+# create new dataset
+covid <-  covid_raw %>% mutate(cdc_report_dt = as.Date(cdc_report_dt, "%m/%d/%y"),
+                   pos_spec_dt = as.Date(pos_spec_dt, "%m/%d/%y"),
+                   current_status = factor(current_status),
+                   sex = factor(sex),
+                   age_group = factor(age_group),
+                   `Race and ethnicity (combined)` = factor(`Race and ethnicity (combined)`),
+                   hosp_yn = factor(hosp_yn),
+                   icu_yn = factor(icu_yn),
+                   death_yn = factor(death_yn),
+                   medcond_yn = factor(medcond_yn))
+```
+
+
+```{r}
+# view summary of each variable
+covid %>% 
+  select(current_status,
+                 sex,
+                 age_group,
+                 `Race and ethnicity (combined)`,
+                 hosp_yn,
+                 icu_yn,
+                 death_yn,
+                 medcond_yn) %>%
+  summary(maxsum=10)
+
+
+
+
+```
+
+```{r, include = FALSE}
+# another function for quick view
+glimpse
+```
+
+```{r}
+# create dataset with only entries with confirmed cases
+covid_confirmed <-  covid %>%
+                        filter(current_status == "Laboratory-confirmed case") %>%
+                        select(sex,
+                               age_group,
+                               `Race and ethnicity (combined)`,
+                               hosp_yn,
+                               icu_yn,
+                               death_yn,
+                               medcond_yn)
+
+covid_confirmed
+```
+
+
+
+```{r}
+# bar graph of confirmed cases by gender
+covid_confirmed %>%
+  select(sex) %>%
+  ggplot(aes(sex)) +
+  geom_bar() +
+  theme(axis.title=element_blank()) +
+  labs(title = "Cases by Gender")
+```
+
+```{r}
+# bar graph of confirmed cases by age group
+covid_confirmed %>%
+  select(age_group) %>%
+  ggplot(aes(y=age_group)) +
+  geom_bar() +
+  theme(axis.title=element_blank()) +
+  labs(title = "Cases by Age Groups")
+```
+
+```{r}
+# bar graph of confirmed cases by race and ethnicity
+covid_confirmed %>%
+  select(`Race and ethnicity (combined)`) %>%
+  ggplot(aes(y=`Race and ethnicity (combined)`)) +
+  geom_bar() +
+  theme(axis.title=element_blank()) +
+  labs(title = "Cases by Race and Ethnicity")
+```
+
+```{r}
+covid_confirmed %>% 
+  filter(sex == "Female" | sex == "Male",
+         death_yn == "Yes" | death_yn == "No") %>%
+  ggplot(aes(death_yn)) +
+  geom_bar() +
+  theme(axis.title=element_blank()) +
+  labs(title = "Fatal cases")
+```
+
+
+
+
+
+
+```{r}
+covid_confirmed %>% 
+  filter(medcond_yn == "Yes" | medcond_yn == "No",
+         sex == "Female" | sex == "Male",
+         death_yn == "Yes" | death_yn == "No") %>%
+  ggplot(aes(y=medcond_yn, fill = death_yn)) +
+  geom_bar() +
+  theme(axis.title=element_blank()) +
+  labs(title = "Fatal cases with a medical condition and without medical condition")
+
+  #summary(maxsum = 10)
+  
+```
+
+
+
+
+
+
+
+
+
+
